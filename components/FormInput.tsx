@@ -76,7 +76,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     color: colors.text.primary,
-    fontWeight: '500',
   },
   inputContainer: {
     position: 'relative',
@@ -89,7 +88,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     color: colors.text.primary,
-    backgroundColor: colors.white,
   },
   inputError: {
     borderColor: colors.status.error,
