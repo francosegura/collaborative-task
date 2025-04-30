@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Image, 
+  KeyboardAvoidingView, 
+  ScrollView,
+  Platform
+} from 'react-native';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
@@ -20,14 +29,12 @@ export default function Login() {
       password: '',
     };
 
-    // Validar email
     if (!email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Please enter a valid email';
     }
 
-    // Validar password
     if (!password) {
       newErrors.password = 'Password is required';
     }
@@ -48,60 +55,78 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image source={require("../assets/icon.png")} style={styles.logo} />
-      </View>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.logoContainer}>
+          <Image source={require("../assets/icon.png")} style={styles.logo} />
+        </View>
 
-      <Text style={styles.title}>
-        Your tasks collaboration{"\n"}
-        starts with <Text style={styles.titleBold}>Collaby</Text>.
-      </Text>
+        <Text style={styles.title}>
+          Your tasks collaboration starts with <Text style={styles.titleBold}>Collaby</Text>.
+        </Text>
 
-      <View style={styles.form}>
-        <FormInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Your email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          error={errors.email}
-        />
+        <View style={styles.form}>
+          <FormInput
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Your email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email}
+            onErrorChange={(hasError) => {
+              if (!hasError) setErrors(prev => ({ ...prev, email: '' }));
+            }}
+          />
 
-        <FormInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Your password"
-          isPassword
-          error={errors.password}
-        />
-      </View>
+          <FormInput
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Your password"
+            isPassword
+            error={errors.password}
+            onErrorChange={(hasError) => {
+              if (!hasError) setErrors(prev => ({ ...prev, password: '' }));
+            }}
+          />
+        </View>
 
-      <TouchableOpacity style={styles.forgotPassword}>
-        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.forgotPassword}>
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Log in</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Log in</Text>
+        </TouchableOpacity>
 
-      <View style={styles.signupContainer}>
-        <Text style={styles.signupText}>Create an account? </Text>
-        <Link href="/register" asChild>
-          <TouchableOpacity>
-            <Text style={styles.signupLink}>Sign Up</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
-    </View>
+        <View style={styles.signupContainer}>
+          <Text style={styles.signupText}>Create an account? </Text>
+          <Link href="/register" asChild>
+            <TouchableOpacity>
+              <Text style={styles.signupLink}>Sign Up</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
   },
   logoContainer: {

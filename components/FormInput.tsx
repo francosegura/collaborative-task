@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, TextInputProps } from 'react-native';
 import { colors } from '../constants/colors';
 import EyeIcon from '../assets/eye.svg';
@@ -7,15 +7,32 @@ interface FormInputProps extends TextInputProps {
   label: string;
   error?: string;
   isPassword?: boolean;
+  onChangeText?: (text: string) => void;
+  onErrorChange?: (hasError: boolean) => void;
 }
 
 export default function FormInput({ 
   label, 
-  error, 
+  error,
   isPassword,
+  onChangeText,
+  onErrorChange,
   ...props 
 }: FormInputProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState(error);
+
+  useEffect(() => {
+    setLocalError(error);
+  }, [error]);
+
+  const handleChangeText = (text: string) => {
+    if (localError) {
+      setLocalError('');
+      onErrorChange?.(false);
+    }
+    onChangeText?.(text);
+  };
 
   return (
     <View style={styles.container}>
@@ -24,11 +41,12 @@ export default function FormInput({
         <TextInput
           style={[
             styles.input,
-            error ? styles.inputError : null,
+            localError ? styles.inputError : null,
             isPassword ? styles.passwordInput : null,
           ]}
           secureTextEntry={isPassword && !showPassword}
           placeholderTextColor="#A1A1A6"
+          onChangeText={handleChangeText}
           {...props}
         />
         {isPassword && (
@@ -46,7 +64,7 @@ export default function FormInput({
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {localError && <Text style={styles.errorText}>{localError}</Text>}
     </View>
   );
 }
