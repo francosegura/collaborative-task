@@ -84,7 +84,7 @@ export default function Login() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Create account</Text>
+        <Text style={styles.buttonText}>Log in</Text>
       </TouchableOpacity>
 
       <View style={styles.signupContainer}>
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   form: {
-    gap: 24,
+    gap: 20,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
@@ -142,12 +142,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 32,
   },
   buttonText: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: '600',
   },
   signupContainer: {
     flexDirection: 'row',
