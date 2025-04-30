@@ -1,80 +1,27 @@
-import { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  KeyboardAvoidingView, 
-  ScrollView,
-  Platform,
-  SafeAreaView
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, ScrollView, Platform, SafeAreaView } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
 import FormInput from '../components/FormInput';
 import { Ionicons } from '@expo/vector-icons';
+import { Formik } from 'formik';
+import { registerSchema } from './validationSchemas';
 
 export default function Register() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
   const { register } = useAuth();
 
-  const validateForm = () => {
-    const newErrors = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-    };
-
-    if (!firstName) {
-      newErrors.firstName = 'Firstname is required';
-    }
-
-    if (!lastName) {
-      newErrors.lastName = 'Lastname is required';
-    }
-
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-
-    if (!password) {
-      newErrors.password = 'Password is required';
-    }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Password and confirm password must match';
-    }
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some(error => error !== '');
-  };
-
-  const handleRegister = async () => {
-    if (validateForm()) {
-      try {
-        await register(email, password, `${firstName} ${lastName}`);
-        router.replace('/tasks');
-      } catch (error) {
-        console.error('Register error:', error);
-      }
+  const handleSubmit = async (values: { 
+    firstName: string; 
+    lastName: string; 
+    email: string; 
+    password: string; 
+    confirmPassword: string;
+  }) => {
+    try {
+      await register(values.email, values.password, `${values.firstName} ${values.lastName}`);
+      router.replace('/tasks');
+    } catch (error) {
+      console.error('Register error:', error);
     }
   };
 
@@ -107,72 +54,74 @@ export default function Register() {
             </Text>
           </View>
 
-          <View style={styles.form}>
-            <FormInput
-              label="Firstname"
-              value={firstName}
-              onChangeText={setFirstName}
-              placeholder="Your firstname"
-              error={errors.firstName}
-              onErrorChange={(hasError) => {
-                if (!hasError)
-                  setErrors((prev) => ({ ...prev, firstName: "" }));
-              }}
-            />
+          <Formik
+            initialValues={{
+              firstName: '',
+              lastName: '',
+              email: '',
+              password: '',
+              confirmPassword: '',
+            }}
+            validationSchema={registerSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+              <View style={styles.form}>
+                <FormInput
+                  label="Firstname"
+                  value={values.firstName}
+                  onChangeText={handleChange('firstName')}
+                  onBlur={handleBlur('firstName')}
+                  placeholder="Your firstname"
+                  error={touched.firstName ? errors.firstName : ''}
+                />
 
-            <FormInput
-              label="Lastname"
-              value={lastName}
-              onChangeText={setLastName}
-              placeholder="Your lastname"
-              error={errors.lastName}
-              onErrorChange={(hasError) => {
-                if (!hasError) setErrors((prev) => ({ ...prev, lastName: "" }));
-              }}
-            />
+                <FormInput
+                  label="Lastname"
+                  value={values.lastName}
+                  onChangeText={handleChange('lastName')}
+                  onBlur={handleBlur('lastName')}
+                  placeholder="Your lastname"
+                  error={touched.lastName ? errors.lastName : ''}
+                />
 
-            <FormInput
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Your email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              error={errors.email}
-              onErrorChange={(hasError) => {
-                if (!hasError) setErrors((prev) => ({ ...prev, email: "" }));
-              }}
-            />
+                <FormInput
+                  label="Email"
+                  value={values.email}
+                  onChangeText={handleChange('email')}
+                  onBlur={handleBlur('email')}
+                  placeholder="Your email"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  error={touched.email ? errors.email : ''}
+                />
 
-            <FormInput
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Your password"
-              isPassword
-              error={errors.password}
-              onErrorChange={(hasError) => {
-                if (!hasError) setErrors((prev) => ({ ...prev, password: "" }));
-              }}
-            />
+                <FormInput
+                  label="Password"
+                  value={values.password}
+                  onChangeText={handleChange('password')}
+                  onBlur={handleBlur('password')}
+                  placeholder="Your password"
+                  isPassword
+                  error={touched.password ? errors.password : ''}
+                />
 
-            <FormInput
-              label="Confirm Password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Your password"
-              isPassword
-              error={errors.confirmPassword}
-              onErrorChange={(hasError) => {
-                if (!hasError)
-                  setErrors((prev) => ({ ...prev, confirmPassword: "" }));
-              }}
-            />
-          </View>
+                <FormInput
+                  label="Confirm Password"
+                  value={values.confirmPassword}
+                  onChangeText={handleChange('confirmPassword')}
+                  onBlur={handleBlur('confirmPassword')}
+                  placeholder="Your password"
+                  isPassword
+                  error={touched.confirmPassword ? errors.confirmPassword : ''}
+                />
 
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>Create account</Text>
-          </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
+                  <Text style={styles.buttonText}>Create account</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </Formik>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

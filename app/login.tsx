@@ -1,56 +1,20 @@
-import { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Image, 
-  KeyboardAvoidingView, 
-  ScrollView,
-  Platform
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
 import FormInput from '../components/FormInput';
+import { Formik } from 'formik';
+import { loginSchema } from './validationSchemas';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({
-    email: '',
-    password: '',
-  });
   const { login } = useAuth();
 
-  const validateForm = () => {
-    const newErrors = {
-      email: '',
-      password: '',
-    };
-
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-
-    if (!password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setErrors(newErrors);
-    return !newErrors.email && !newErrors.password;
-  };
-
-  const handleLogin = async () => {
-    if (validateForm()) {
-      try {
-        await login(email, password);
-        router.replace('/tasks');
-      } catch (error) {
-        console.error('Login error:', error);
-      }
+  const handleSubmit = async (values: { email: string; password: string }) => {
+    try {
+      await login(values.email, values.password);
+      router.replace('/tasks');
+    } catch (error) {
+      console.error('Login error:', error);
     }
   };
 
@@ -73,49 +37,53 @@ export default function Login() {
           Your tasks collaboration starts with <Text style={styles.titleBold}>Collaby</Text>.
         </Text>
 
-        <View style={styles.form}>
-          <FormInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Your email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-            onErrorChange={(hasError) => {
-              if (!hasError) setErrors(prev => ({ ...prev, email: '' }));
-            }}
-          />
+        <Formik
+          initialValues={{ email: '', password: '' }}
+          validationSchema={loginSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+            <View style={styles.form}>
+              <FormInput
+                label="Email"
+                value={values.email}
+                onChangeText={handleChange('email')}
+                onBlur={handleBlur('email')}
+                placeholder="Your email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                error={touched.email ? errors.email : ''}
+              />
 
-          <FormInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Your password"
-            isPassword
-            error={errors.password}
-            onErrorChange={(hasError) => {
-              if (!hasError) setErrors(prev => ({ ...prev, password: '' }));
-            }}
-          />
-        </View>
+              <FormInput
+                label="Password"
+                value={values.password}
+                onChangeText={handleChange('password')}
+                onBlur={handleBlur('password')}
+                placeholder="Your password"
+                isPassword
+                error={touched.password ? errors.password : ''}
+              />
 
-        <TouchableOpacity style={styles.forgotPassword}>
-          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-        </TouchableOpacity>
+              <TouchableOpacity style={styles.forgotPassword}>
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Log in</Text>
-        </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
+                <Text style={styles.buttonText}>Log in</Text>
+              </TouchableOpacity>
 
-        <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>Create an account? </Text>
-          <Link href="/register" asChild>
-            <TouchableOpacity>
-              <Text style={styles.signupLink}>Sign Up</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
+              <View style={styles.signupContainer}>
+                <Text style={styles.signupText}>Create an account? </Text>
+                <Link href="/register" asChild>
+                  <TouchableOpacity>
+                    <Text style={styles.signupLink}>Sign Up</Text>
+                  </TouchableOpacity>
+                </Link>
+              </View>
+            </View>
+          )}
+        </Formik>
       </ScrollView>
     </KeyboardAvoidingView>
   );
