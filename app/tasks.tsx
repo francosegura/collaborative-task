@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useTasks } from '../context/TaskContext';
 import { colors } from '../constants/colors';
@@ -37,80 +37,93 @@ export default function Tasks() {
   });
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{user?.name}'s Tasks</Text>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <View style={styles.logoutIcon}>
-              <ArrowIcon width={15} />
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.safeArea}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <Text style={styles.title}>{user?.name}'s Tasks</Text>
+              <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <View style={styles.logoutIcon}>
+                  <ArrowIcon width={15} />
+                </View>
+                <Text style={styles.logoutText}>Log out</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={styles.logoutText}>Log out</Text>
+
+            <Text style={styles.date}>{currentDate}</Text>
+
+            <View style={styles.inputsContainer}>
+              <FormInput placeholder="Search by Title or Name" />
+              <View style={styles.dateInputsContainer}>
+                <View style={styles.dateInputWrapper}>
+                  <FormInput placeholder="start date" style={styles.dateInput} />
+                </View>
+                <View style={styles.dateInputWrapper}>
+                  <FormInput placeholder="end date" style={styles.dateInput} />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.emptyStateContainer}>
+              <View style={styles.tabsContainer}>
+                <TouchableOpacity 
+                  onPress={() => handleFilterChange('all')}
+                  style={[styles.tabButton]}
+                >
+                  <Text style={[styles.tabText, activeFilter === 'all' && styles.activeTabText]}>All tasks</Text>
+                </TouchableOpacity>
+                <Feather name="minus" size={24} color="rgba(204, 207, 210, 1)" style={styles.tabSeparator} />
+                <TouchableOpacity 
+                  onPress={() => handleFilterChange('completed')}
+                  style={[styles.tabButton]}
+                >
+                  <Text style={[styles.tabText, activeFilter === 'completed' && styles.activeTabText]}>Completed tasks</Text>
+                </TouchableOpacity>
+              </View>
+
+              {tasks.length === 0 && (
+                <>
+                  <FontAwesome6
+                    name="list-ul"
+                    size={80}
+                    color="rgba(199, 202, 205, 0.36)"
+                    style={styles.emptyIcon}
+                  />
+                  <Text style={styles.emptyStateTitle}>
+                    <Text style={{ fontStyle: "italic" }}>Just Press</Text> "Create
+                    a Task"
+                  </Text>
+                  <Text style={styles.emptyStateSubtitle}>
+                    and start collaborating
+                  </Text>
+                </>
+              )}
+            </View>
+          </View>
+        </ScrollView>
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity style={styles.createButton}>
+            <Text style={styles.createButtonText}>Create a Task</Text>
           </TouchableOpacity>
         </View>
-
-        <Text style={styles.date}>{currentDate}</Text>
-
-        <View style={styles.inputsContainer}>
-          <FormInput placeholder="Search by Title or Name" />
-          <View style={styles.dateInputsContainer}>
-            <View style={styles.dateInputWrapper}>
-              <FormInput placeholder="start date" style={styles.dateInput} />
-            </View>
-            <View style={styles.dateInputWrapper}>
-              <FormInput placeholder="end date" style={styles.dateInput} />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.emptyStateContainer}>
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity 
-              onPress={() => handleFilterChange('all')}
-              style={[styles.tabButton]}
-            >
-              <Text style={[styles.tabText, activeFilter === 'all' && styles.activeTabText]}>All tasks</Text>
-            </TouchableOpacity>
-            <Feather name="minus" size={24} color="rgba(204, 207, 210, 1)" style={styles.tabSeparator} />
-            <TouchableOpacity 
-              onPress={() => handleFilterChange('completed')}
-              style={[styles.tabButton]}
-            >
-              <Text style={[styles.tabText, activeFilter === 'completed' && styles.activeTabText]}>Completed tasks</Text>
-            </TouchableOpacity>
-          </View>
-
-          {tasks.length === 0 && (
-            <>
-              <FontAwesome6
-                name="list-ul"
-                size={80}
-                color="rgba(199, 202, 205, 0.36)"
-                style={styles.emptyIcon}
-              />
-              <Text style={styles.emptyStateTitle}>
-                <Text style={{ fontStyle: "italic" }}>Just Press</Text> "Create
-                a Task"
-              </Text>
-              <Text style={styles.emptyStateSubtitle}>
-                and start collaborating
-              </Text>
-            </>
-          )}
-        </View>
-      </View>
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.createButton}>
-          <Text style={styles.createButtonText}>Create a Task</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   container: {
     flex: 1,
