@@ -1,60 +1,211 @@
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useTasks } from '../context/TaskContext';
-import TaskCard from '../components/TaskCard';
-import DateRangeFilter from '../components/DateRangeFilter';
+import { colors } from '../constants/colors';
+import { router } from 'expo-router';
+import ArrowIcon from '../assets/arrow.svg';
+import FormInput from '../components/FormInput';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import React from 'react';
+import Feather from '@expo/vector-icons/Feather';
 
 export default function Tasks() {
-  const { user } = useAuth();
-  const { tasks, loading, error, filters, setFilters } = useTasks();
+  const { user, logout } = useAuth();
+  const { tasks } = useTasks();
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <Text>Cargando...</Text>
-      </View>
-    );
-  }
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.replace('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text>Error: {error}</Text>
-      </View>
-    );
-  }
+  // Get current date in format "Wednesday, April 30"
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: '2-digit'
+  });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tareas de {user?.name}</Text>
-      
-      <DateRangeFilter
-        onDateRangeChange={(startDate, endDate) => {
-          setFilters({ ...filters, startDate, endDate });
-        }}
-      />
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{user?.name}'s Tasks</Text>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <View style={styles.logoutIcon}>
+              <ArrowIcon width={15} />
+            </View>
+            <Text style={styles.logoutText}>Log out</Text>
+          </TouchableOpacity>
+        </View>
 
-      <FlatList
-        data={tasks}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TaskCard task={item} />}
-        contentContainerStyle={styles.list}
-      />
-    </View>
+        <Text style={styles.date}>{currentDate}</Text>
+
+        <View style={styles.inputsContainer}>
+          <FormInput placeholder="Search by Title or Name" />
+          <View style={styles.dateInputsContainer}>
+            <View style={styles.dateInputWrapper}>
+              <FormInput placeholder="start date" style={styles.dateInput} />
+            </View>
+            <View style={styles.dateInputWrapper}>
+              <FormInput placeholder="end date" style={styles.dateInput} />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.emptyStateContainer}>
+          <View style={styles.tabsContainer}>
+            <Text style={[styles.tabText, styles.activeTab]}>All tasks</Text>
+            <Feather name="minus" size={24} color="rgba(204, 207, 210, 1)" style={styles.tabSeparator} />
+            <Text style={styles.tabText}>Completed tasks</Text>
+          </View>
+
+          {tasks.length === 0 && (
+            <>
+              <FontAwesome6
+                name="list-ul"
+                size={80}
+                color="rgba(199, 202, 205, 0.36)"
+                style={styles.emptyIcon}
+              />
+              <Text style={styles.emptyStateTitle}>
+                <Text style={{ fontStyle: "italic" }}>Just Press</Text> "Create
+                a Task"
+              </Text>
+              <Text style={styles.emptyStateSubtitle}>
+                and start collaborating
+              </Text>
+            </>
+          )}
+        </View>
+      </View>
+      <View style={styles.bottomContainer}>
+        <TouchableOpacity style={styles.createButton}>
+          <Text style={styles.createButtonText}>Create a Task</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    padding: 20,
+    padding: 16,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 16,
+    marginBottom: 4,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: "bold",
+    width: "50%",
   },
-  list: {
-    paddingBottom: 20,
+  emptyIcon: {
+    marginBottom: 10,
   },
-}); 
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(199, 202, 205, 0.4)",
+    gap: 4,
+    backgroundColor: colors.white,
+  }, 
+  inputsContainer: {
+    gap: 8,
+  },
+  tabSeparator: {
+    transform: [{ rotate: '90deg' }],
+  },
+  dateInput: {
+    height: 40,
+    borderRadius: 8,
+  },
+  logoutText: {
+    fontSize: 14,
+    color: "#000",
+    fontWeight: "500",
+  },
+  date: {
+    fontSize: 16,
+    color: "#A3A3A3",
+    marginBottom: 24,
+  },
+  dateInputsContainer: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  dateInputWrapper: {
+    flex: 1,
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    gap: 24,
+    marginBottom: 24,
+  },
+  tabText: {
+    color: "#A3A3A3",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  activeTab: {
+    color: colors.primary,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    alignItems: "center",
+    marginTop: 32,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    color: colors.text.secondary,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  emptyStateSubtitle: {
+    marginTop: 6,
+    fontSize: 20,
+    color: colors.text.secondary,
+    textAlign: "center",
+  },
+  bottomContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    marginBottom: 32,
+  },
+  createButton: {
+    backgroundColor: "rgba(10, 130, 255, 0.14)",
+    height: 52,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  createButtonText: {
+    color: colors.primary,
+    fontSize: 16,
+  },
+  logoutIcon: {
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 3,
+    height: 12,
+    width: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

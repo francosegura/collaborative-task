@@ -4,7 +4,7 @@ import { colors } from '../constants/colors';
 import EyeIcon from '../assets/eye.svg';
 
 interface FormInputProps extends TextInputProps {
-  label: string;
+  label?: string;
   error?: string;
   isPassword?: boolean;
   onChangeText?: (text: string) => void;
@@ -17,6 +17,7 @@ export default function FormInput({
   isPassword,
   onChangeText,
   onErrorChange,
+  style: propStyle,
   ...props 
 }: FormInputProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,13 +37,14 @@ export default function FormInput({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.inputContainer}>
         <TextInput
           style={[
             styles.input,
             localError ? styles.inputError : null,
             isPassword ? styles.passwordInput : null,
+            propStyle,
           ]}
           secureTextEntry={isPassword && !showPassword}
           placeholderTextColor="#A1A1A6"
@@ -84,7 +86,7 @@ const styles = StyleSheet.create({
     height: 52,
     borderWidth: 2,
     borderColor: colors.border,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: 16,
     color: colors.text.primary,

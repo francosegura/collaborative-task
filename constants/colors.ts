@@ -6,7 +6,7 @@ export const colors = {
   // Texto
   text: {
     primary: '#1C1C1E',
-    secondary: '#666666',
+    secondary: '#A3A3A3',
     tertiary: '#999999',
   },
 
