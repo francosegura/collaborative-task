@@ -6,12 +6,15 @@ import { router } from 'expo-router';
 import ArrowIcon from '../assets/arrow.svg';
 import FormInput from '../components/FormInput';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import React from 'react';
+import React, { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
+
+type FilterType = 'all' | 'completed';
 
 export default function Tasks() {
   const { user, logout } = useAuth();
   const { tasks } = useTasks();
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const handleLogout = async () => {
     try {
@@ -20,6 +23,10 @@ export default function Tasks() {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const handleFilterChange = (filter: FilterType) => {
+    setActiveFilter(filter);
   };
 
   // Get current date in format "Wednesday, April 30"
@@ -58,9 +65,19 @@ export default function Tasks() {
 
         <View style={styles.emptyStateContainer}>
           <View style={styles.tabsContainer}>
-            <Text style={[styles.tabText, styles.activeTab]}>All tasks</Text>
+            <TouchableOpacity 
+              onPress={() => handleFilterChange('all')}
+              style={[styles.tabButton]}
+            >
+              <Text style={[styles.tabText, activeFilter === 'all' && styles.activeTabText]}>All tasks</Text>
+            </TouchableOpacity>
             <Feather name="minus" size={24} color="rgba(204, 207, 210, 1)" style={styles.tabSeparator} />
-            <Text style={styles.tabText}>Completed tasks</Text>
+            <TouchableOpacity 
+              onPress={() => handleFilterChange('completed')}
+              style={[styles.tabButton]}
+            >
+              <Text style={[styles.tabText, activeFilter === 'completed' && styles.activeTabText]}>Completed tasks</Text>
+            </TouchableOpacity>
           </View>
 
           {tasks.length === 0 && (
@@ -156,13 +173,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 24,
     marginBottom: 24,
+    alignItems: 'center',
+  },
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
   tabText: {
     color: "#A3A3A3",
     fontSize: 16,
     fontWeight: "bold",
   },
-  activeTab: {
+  activeTabText: {
     color: colors.primary,
   },
   emptyStateContainer: {
