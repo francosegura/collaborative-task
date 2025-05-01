@@ -5,7 +5,7 @@ import { colors } from '../constants/colors';
 import FormInput from '../components/FormInput';
 import { Ionicons } from '@expo/vector-icons';
 import { Formik } from 'formik';
-import { registerSchema } from './validationSchemas';
+import { registerSchema } from '../utils/validationSchemas';
 
 export default function Register() {
   const { register } = useAuth();
@@ -131,7 +131,6 @@ export default function Register() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.white,
   },
   container: {
     flex: 1,

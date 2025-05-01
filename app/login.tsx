@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
 import FormInput from '../components/FormInput';
 import { Formik } from 'formik';
-import { loginSchema } from './validationSchemas';
+import { loginSchema } from '../utils/validationSchemas';
 
 export default function Login() {
   const { login } = useAuth();
