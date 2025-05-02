@@ -95,7 +95,6 @@ export const styles = StyleSheet.create({
     color: colors.primary,
   },
   emptyStateContainer: {
-    flex: 1,
     alignItems: "center",
     marginTop: 32,
   },

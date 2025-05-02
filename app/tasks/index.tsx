@@ -5,7 +5,7 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  FlatList,
 } from "react-native";
 import ArrowIcon from "@/assets/arrow.svg";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -18,6 +18,7 @@ import { styles } from "./styles";
 import FormInput from "@/components/FormInput";
 import { useTasksScreen } from "./useTasksScreen";
 import {CreateTaskModal} from "./CreateTaskModal";
+import TaskCard from '@/components/TaskCard';
 
 export default function Tasks() {
   const {
@@ -44,9 +45,8 @@ export default function Tasks() {
       style={styles.safeArea}
     >
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+        <View
+          style={styles.scrollContent}
         >
           <View style={styles.container}>
             <View style={styles.header}>
@@ -135,27 +135,36 @@ export default function Tasks() {
                   </Text>
                 </TouchableOpacity>
               </View>
-
-              {tasks.length === 0 && (
-                <>
-                  <FontAwesome6
-                    name="list-ul"
-                    size={80}
-                    color="rgba(199, 202, 205, 0.36)"
-                    style={styles.emptyIcon}
-                  />
-                  <Text style={styles.emptyStateTitle}>
-                    <Text style={{ fontStyle: "italic" }}>Just Press</Text>{" "}
-                    "Create a Task"
-                  </Text>
-                  <Text style={styles.emptyStateSubtitle}>
-                    and start collaborating
-                  </Text>
-                </>
-              )}
             </View>
+            <FlatList
+                data={tasks}
+                keyExtractor={item => item.id}
+                renderItem={({ item }) => (
+                  <TaskCard task={item} />
+                )}
+                contentContainerStyle={{ paddingBottom: 24 }}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                ListEmptyComponent={
+                  <>
+                    <FontAwesome6
+                      name="list-ul"
+                      size={80}
+                      color="rgba(199, 202, 205, 0.36)"
+                      style={styles.emptyIcon}
+                    />
+                    <Text style={styles.emptyStateTitle}>
+                      <Text style={{ fontStyle: "italic" }}>Just Press</Text>{" "}
+                      "Create a Task"
+                    </Text>
+                    <Text style={styles.emptyStateSubtitle}>
+                      and start collaborating
+                    </Text>
+                  </>
+                }
+              />
           </View>
-        </ScrollView>
+        </View>
         <View style={styles.bottomContainer}>
           <TouchableOpacity 
             style={styles.createButton}

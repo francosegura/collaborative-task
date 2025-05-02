@@ -1,82 +1,118 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
-import { Task } from '../types/task';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { format } from 'date-fns';
+import { Task } from '@/types/task';
 
-interface TaskCardProps {
+type Props = {
   task: Task;
-}
+  onToggleComplete?: () => void;
+};
 
-export default function TaskCard({ task }: TaskCardProps) {
+const TaskCard = ({ task, onToggleComplete }: Props) => {
+  const initials = task.user
+    .split(' ')
+    .map((s) => s[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  const dueDate = task.dueDate ? format(task.dueDate, 'MMMM dd, yyyy') : null;
+
   return (
-    <Link href={`/tasks/${task.id}`} asChild>
-      <TouchableOpacity style={styles.container}>
-        <View style={styles.header}>
+    <View style={styles.card}>
+      <View style={styles.header}>
+        <View style={{ flex: 1 }}>
           <Text style={styles.title}>{task.title}</Text>
-          <View style={[
-            styles.statusBadge,
-            { backgroundColor: task.status === 'completed' ? '#4CAF50' : '#FFC107' }
-          ]}>
-            <Text style={styles.statusText}>
-              {task.status === 'completed' ? 'Completada' : 'Pendiente'}
-            </Text>
-          </View>
+          <Text style={styles.description}>{task.description}</Text>
         </View>
-        <Text style={styles.description} numberOfLines={2}>
-          {task.description}
-        </Text>
-        {task.dueDate && (
-          <Text style={styles.dueDate}>
-            Vence: {new Date(task.dueDate).toLocaleDateString()}
-          </Text>
+        <TouchableOpacity onPress={onToggleComplete}>
+          <View style={styles.checkbox}>
+            {task.completed && <Ionicons name="checkmark" size={18} color="#000" />}
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.footer}>
+        {dueDate && (
+          <View style={styles.dateBox}>
+            <Text style={styles.dateText}>{dueDate}</Text>
+            <Ionicons name="alert-circle" size={14} color="#dc2626" />
+          </View>
         )}
-      </TouchableOpacity>
-    </Link>
+
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{initials}</Text>
+        </View>
+      </View>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+    marginBottom: 12,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+    alignItems: 'flex-start',
   },
   title: {
-    fontSize: 18,
     fontWeight: 'bold',
-    flex: 1,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 15,
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 4,
   },
   description: {
-    color: '#666',
-    marginBottom: 10,
+    color: '#6B7280',
+    fontSize: 14,
   },
-  dueDate: {
-    color: '#999',
-    fontSize: 12,
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
   },
-}); 
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  dateBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FECACA',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    gap: 6,
+  },
+  dateText: {
+    color: '#dc2626',
+    fontWeight: '500',
+    fontSize: 13,
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontWeight: 'bold',
+    color: '#333',
+  },
+});
+
+export default TaskCard;

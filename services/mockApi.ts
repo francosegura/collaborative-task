@@ -1,9 +1,30 @@
-import { Task, TaskAPI } from "@/types/task";
+import { TaskAPI } from "@/types/task";
   
-  let mockTasks: TaskAPI[] = [];
-  
-  let loggedInUserId: string | null = "1";
-  let taskIdCounter = 3;
+let loggedInUserId: string = "1";
+let taskIdCounter = 3;
+
+
+let mockTasks: TaskAPI[] = [
+  {
+    id: "1",
+    title: "Task 1",
+    description: "Description 1",
+    start_date: new Date("2023-01-01").toISOString(),
+    due_date: new Date("2023-01-05").toISOString(),
+    completed: false,
+    user: "1",
+  },
+  {
+    id: "2",
+    title: "Task 2",
+    description: "Description 2",
+    start_date: new Date("2023-01-02").toISOString(),
+    due_date: new Date("2023-01-06").toISOString(),
+    completed: true,
+    user: "1",
+  },
+];
+
   
   // Simulate login with fake credentials
   export const login = async (email: string, password: string) => {
@@ -30,6 +51,7 @@ import { Task, TaskAPI } from "@/types/task";
     return new Promise<TaskAPI[]>((resolve) => {
       setTimeout(() => {
         console.log('[MockAPI] Fetching user tasks');
+        console.log("loggedInUserId", loggedInUserId);
         resolve(mockTasks.filter((task) => task.user === loggedInUserId));
       }, 500);
     });
