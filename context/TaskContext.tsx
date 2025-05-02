@@ -25,7 +25,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
-      loadTasks();
+    //   loadTasks();
     }
   }, [user]);
 
