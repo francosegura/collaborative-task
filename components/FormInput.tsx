@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   input: {
-    height: 52,
+    minHeight: 52,
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: 16,

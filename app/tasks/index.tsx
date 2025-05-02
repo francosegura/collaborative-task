@@ -73,7 +73,7 @@ export default function Tasks() {
                 >
                   <Text style={styles.placeholder}>
                     {filters.startDate
-                      ? format(filters.startDate, "yyyy-MM-dd")
+                      ? format(filters.startDate, "MM-dd-yyyy")
                       : "start date"}
                   </Text>
                   <Ionicons name="calendar-outline" size={18} color="#999" />
@@ -85,7 +85,7 @@ export default function Tasks() {
                 >
                   <Text style={styles.placeholder}>
                     {filters.endDate
-                      ? format(filters.endDate, "yyyy-MM-dd")
+                      ? format(filters.endDate, "MM-dd-yyyy")
                       : "end date"}
                   </Text>
                   <Ionicons name="calendar-outline" size={18} color="#999" />
