@@ -184,7 +184,7 @@ export default function Tasks() {
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 ListEmptyComponent={
-                  <>
+                  <View style={styles.emptyStateContainer}>
                     <FontAwesome6
                       name="list-ul"
                       size={80}
@@ -198,7 +198,7 @@ export default function Tasks() {
                     <Text style={styles.emptyStateSubtitle}>
                       and start collaborating
                     </Text>
-                  </>
+                  </View>
                 }
               />
             
