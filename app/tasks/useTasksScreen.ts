@@ -8,7 +8,7 @@ type FilterType = 'all' | 'completed';
 
 export const useTasksScreen = () => {
   const { user, logout } = useAuth();
-  const { tasks, filters, setFilters, createTask, updateTask } = useTasks();
+  const { tasks, filters, setFilters, createTask, updateTask, loadTasks } = useTasks();
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [pickerType, setPickerType] = useState<'start' | 'end' | null>(null);
   const [isPickerVisible, setPickerVisible] = useState(false);
@@ -61,6 +61,7 @@ export const useTasksScreen = () => {
       } else {
         await createTask(task);
       }
+      await loadTasks();
       setCreateModalVisible(false);
     } catch (err: any) {
       setError(err?.toString() || 'Error creating/updating task');

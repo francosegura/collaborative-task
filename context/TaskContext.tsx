@@ -13,6 +13,7 @@ interface TaskContextType {
   createTask: (taskData: TaskFormData) => Promise<void>;
   updateTaskStatus: (taskId: string, completed: boolean) => Promise<void>;
   updateTask: (taskId: string, taskData: TaskFormData) => Promise<void>;
+  loadTasks: () => Promise<void>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -144,6 +145,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         createTask,
         updateTaskStatus,
         updateTask,
+        loadTasks,
       }}
     >
       {children}

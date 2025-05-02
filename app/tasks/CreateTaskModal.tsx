@@ -77,8 +77,8 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit, initialValues, edi
           };
 
           const handleConfirm = (date: Date) => {
-            if (pickerType === "start") setFieldValue("startDate", date);
-            if (pickerType === 'end') setFieldValue('dueDate', date);
+            if (pickerType === "start") setFieldValue("startDate", date, true);
+            if (pickerType === "end") setFieldValue("dueDate", date, true);
             setPickerVisible(false);
           };
 
