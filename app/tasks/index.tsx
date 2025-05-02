@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./styles";
 import FormInput from "@/components/FormInput";
 import { useTasksScreen } from "./useTasksScreen";
+import {CreateTaskModal} from "./CreateTaskModal";
 
 export default function Tasks() {
   const {
@@ -31,7 +32,12 @@ export default function Tasks() {
     hidePicker,
     handleConfirm,
     currentDate,
+    isCreateModalVisible,
+    handleCreateTaskPress,
+    handleCloseModal,
+    handleCreateTask,
   } = useTasksScreen();
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -151,10 +157,19 @@ export default function Tasks() {
           </View>
         </ScrollView>
         <View style={styles.bottomContainer}>
-          <TouchableOpacity style={styles.createButton}>
+          <TouchableOpacity 
+            style={styles.createButton}
+            onPress={handleCreateTaskPress}
+          >
             <Text style={styles.createButtonText}>Create a Task</Text>
           </TouchableOpacity>
         </View>
+
+        <CreateTaskModal
+          visible={isCreateModalVisible}
+          onClose={handleCloseModal}
+          onSubmit={handleCreateTask}
+        />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );

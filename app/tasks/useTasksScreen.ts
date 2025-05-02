@@ -11,6 +11,7 @@ export const useTasksScreen = () => {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [pickerType, setPickerType] = useState<'start' | 'end' | null>(null);
   const [isPickerVisible, setPickerVisible] = useState(false);
+  const [isCreateModalVisible, setCreateModalVisible] = useState(false);
 
   const showPicker = (type: 'start' | 'end') => {
     setPickerType(type);
@@ -40,6 +41,26 @@ export const useTasksScreen = () => {
     setActiveFilter(filter);
   };
 
+  const handleCreateTaskPress = () => {
+    setCreateModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setCreateModalVisible(false);
+  };
+
+  const handleCreateTask = (data: {
+    title: string;
+    description: string;
+    startDate: Date | null;
+    endDate: Date | null;
+    assignedTo: string | null;
+    completed: boolean;
+  }) => {
+    // TODO: Implement task creation
+    setCreateModalVisible(false);
+  };
+
   // Get current date in format "Wednesday, April 30"
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -60,6 +81,10 @@ export const useTasksScreen = () => {
     showPicker,
     hidePicker,
     handleConfirm,
-    handleLogout
+    handleLogout,
+    isCreateModalVisible,
+    handleCreateTaskPress,
+    handleCloseModal,
+    handleCreateTask
   };
 }; 
