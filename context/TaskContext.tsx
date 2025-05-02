@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Task, TaskFormData, TaskFilters } from '../types/task';
+import { Task, TaskFormData, TaskFilters, TaskAPI } from '../types/task';
 import { useAuth } from './AuthContext';
 import { isDateInRange } from '../utils/date';
+import * as mockApi from '../services/mockApi';
 
 interface TaskContextType {
   tasks: Task[];
@@ -11,7 +12,6 @@ interface TaskContextType {
   setFilters: (filters: TaskFilters) => void;
   createTask: (taskData: TaskFormData) => Promise<void>;
   updateTaskStatus: (taskId: string, status: 'pending' | 'completed') => Promise<void>;
-  checkTaskConflict: (startDate: string, dueDate?: string) => boolean;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -25,26 +25,23 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
-    //   loadTasks();
+      loadTasks();
     }
   }, [user]);
 
   const loadTasks = async () => {
     try {
       setLoading(true);
-      // TODO: Implementar llamada a API real
-      const mockTasks: Task[] = [
-        {
-          id: '1',
-          title: 'Tarea de ejemplo',
-          description: 'Esta es una tarea de ejemplo',
-          startDate: new Date().toISOString(),
-          dueDate: new Date(Date.now() + 86400000).toISOString(),
-          status: 'pending',
-          userId: user?.id || '',
-        },
-      ];
-      setTasks(mockTasks);
+      const mockTasks = await mockApi.fetchTasks();
+      setTasks(mockTasks.map(task => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        completed: task.completed,
+        user: task.user,
+        startDate: task.start_date ? new Date(task.start_date) : null,
+        dueDate: task.due_date ? new Date(task.due_date) : null
+      })));
     } catch (err) {
       setError('Error al cargar las tareas');
       console.error('Error loading tasks:', err);
@@ -56,13 +53,21 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   const createTask = async (taskData: TaskFormData) => {
     try {
       // TODO: Implementar llamada a API real
-      const newTask: Task = {
+      const newTask: TaskAPI = {
         id: Date.now().toString(),
-        ...taskData,
-        status: 'pending',
-        userId: user?.id || '',
+        user: user?.id || "",
+        start_date: taskData.startDate ? taskData.startDate.toISOString() : "",
+        due_date: taskData.dueDate ? taskData.dueDate.toISOString() : "",
+        title: taskData.title,
+        description: taskData.description,
+        completed: taskData.completed
       };
-      setTasks(prev => [...prev, newTask]);
+      const response = await mockApi.createTask(newTask);
+      setTasks(prev => [...prev, {
+        ...response,
+        startDate: response.start_date ? new Date(response.start_date) : null,
+        dueDate: response.due_date ? new Date(response.due_date) : null
+      }]);
     } catch (err) {
       setError('Error al crear la tarea');
       console.error('Error creating task:', err);
@@ -83,33 +88,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const checkTaskConflict = (startDate: string, dueDate?: string): boolean => {
-    const newStartDate = new Date(startDate);
-    const newDueDate = dueDate ? new Date(dueDate) : undefined;
-
-    return tasks.some(task => {
-      const taskStartDate = new Date(task.startDate);
-      const taskDueDate = task.dueDate ? new Date(task.dueDate) : undefined;
-
-      // Verificar si hay superposición de fechas
-      if (newDueDate && taskDueDate) {
-        return (
-          (newStartDate >= taskStartDate && newStartDate <= taskDueDate) ||
-          (newDueDate >= taskStartDate && newDueDate <= taskDueDate) ||
-          (newStartDate <= taskStartDate && newDueDate >= taskDueDate)
-        );
-      } else if (newDueDate && taskDueDate) {
-        return newStartDate <= taskDueDate && newDueDate >= taskStartDate;
-      } else if (taskDueDate) {
-        return newStartDate <= taskDueDate && newStartDate >= taskStartDate;
-      } else {
-        return newStartDate.getTime() === taskStartDate.getTime();
-      }
-    });
-  };
-
   const filteredTasks = tasks.filter(task => {
-    if (!user || task.userId !== user.id) return false;
+    if (!user || task.user !== user.id) return false;
 
     if (filters.searchText) {
       const searchLower = filters.searchText.toLowerCase();
@@ -119,11 +99,11 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    if (filters.startDate && filters.endDate) {
+    if (filters.startDate && filters.dueDate) {
       return isDateInRange(
-        new Date(task.startDate),
+        task.startDate || new Date(),
         filters.startDate,
-        filters.endDate
+        filters.dueDate
       );
     }
 
@@ -140,7 +120,6 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         setFilters,
         createTask,
         updateTaskStatus,
-        checkTaskConflict,
       }}
     >
       {children}

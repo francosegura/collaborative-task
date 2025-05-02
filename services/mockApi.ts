@@ -1,47 +1,18 @@
-// mockApi.ts
-
-export type Task = {
-    id: number;
-    title: string;
-    description: string;
-    start_date: string; // Format: YYYY-MM-DD
-    due_date?: string | null;
-    completed: boolean;
-    user: number;
-  };
+import { Task, TaskAPI } from "@/types/task";
   
-  let mockTasks: Task[] = [
-    {
-      id: 1,
-      title: 'Buy groceries',
-      description: 'Go to the local supermarket',
-      start_date: '2025-04-30',
-      due_date: '2025-05-01',
-      completed: false,
-      user: 1,
-    },
-    {
-      id: 2,
-      title: 'Finish React Native test',
-      description: 'Implement task management screens',
-      start_date: '2025-04-30',
-      due_date: null,
-      completed: false,
-      user: 1,
-    },
-  ];
+  let mockTasks: TaskAPI[] = [];
   
-  let loggedInUserId: number | null = 1;
+  let loggedInUserId: string | null = "1";
   let taskIdCounter = 3;
   
   // Simulate login with fake credentials
   export const login = async (email: string, password: string) => {
-    return new Promise<{ token: string; userId: number }>((resolve, reject) => {
+    return new Promise<{ token: string; userId: string }>((resolve, reject) => {
       setTimeout(() => {
         if (email && password) {
           console.log('[MockAPI] User logged in');
-          loggedInUserId = 1;
-          resolve({ token: 'mock-token', userId: 1 });
+          loggedInUserId = '1';
+          resolve({ token: 'mock-token', userId: '1' });
         } else {
           reject('Invalid credentials');
         }
@@ -56,7 +27,7 @@ export type Task = {
   
   // Get all tasks for the logged-in user
   export const fetchTasks = async () => {
-    return new Promise<Task[]>((resolve) => {
+    return new Promise<TaskAPI[]>((resolve) => {
       setTimeout(() => {
         console.log('[MockAPI] Fetching user tasks');
         resolve(mockTasks.filter((task) => task.user === loggedInUserId));
@@ -66,49 +37,26 @@ export type Task = {
   
   // Create a new task with date conflict validation
   export const createTask = async (
-    newTask: Omit<Task, 'id' | 'user' | 'completed'>
+    newTask: Omit<TaskAPI, 'id' | 'user' | 'completed'>
   ) => {
-    return new Promise<Task>((resolve, reject) => {
+    return new Promise<TaskAPI>((resolve, reject) => {
       setTimeout(() => {
-        const hasConflict = mockTasks.some((task) => {
-          if (task.user !== loggedInUserId) return false;
-  
-          const newStart = new Date(newTask.start_date).getTime();
-          const newEnd = newTask.due_date
-            ? new Date(newTask.due_date).getTime()
-            : newStart;
-  
-          const taskStart = new Date(task.start_date).getTime();
-          const taskEnd = task.due_date
-            ? new Date(task.due_date).getTime()
-            : taskStart;
-  
-          return (
-            (newStart <= taskEnd && newStart >= taskStart) ||
-            (newEnd >= taskStart && newEnd <= taskEnd)
-          );
-        });
-  
-        if (hasConflict) {
-          reject('Task date range overlaps with an existing task.');
-        } else {
-          const task: Task = {
-            ...newTask,
-            id: taskIdCounter++,
-            completed: false,
-            user: loggedInUserId!,
-          };
-          mockTasks.push(task);
-          console.log('[MockAPI] Task created', task);
-          resolve(task);
-        }
+        const task: TaskAPI = {
+          ...newTask,
+          id: taskIdCounter.toString(),
+          completed: false,
+          user: loggedInUserId!,
+        };
+        mockTasks.push(task);
+        console.log("[MockAPI] Task created", task);
+        resolve(task);
       }, 500);
     });
   };
   
   // Mark a task as completed
-  export const markTaskAsCompleted = async (taskId: number) => {
-    return new Promise<Task>((resolve, reject) => {
+  export const markTaskAsCompleted = async (taskId: string) => {
+    return new Promise<TaskAPI>((resolve, reject) => {
       setTimeout(() => {
         const task = mockTasks.find(
           (t) => t.id === taskId && t.user === loggedInUserId
@@ -125,7 +73,7 @@ export type Task = {
   export const searchTasks = async (
     start?: string,
     end?: string
-  ): Promise<Task[]> => {
+  ): Promise<TaskAPI[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         let filtered = mockTasks.filter((task) => task.user === loggedInUserId);
@@ -133,7 +81,7 @@ export type Task = {
         if (start) {
           const startDate = new Date(start).getTime();
           filtered = filtered.filter(
-            (t) => new Date(t.start_date).getTime() >= startDate
+            (t) => t.start_date && new Date(t.start_date).getTime() >= startDate
           );
         }
   

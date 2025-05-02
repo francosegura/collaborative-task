@@ -15,18 +15,12 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { format } from 'date-fns';
 import { Formik } from 'formik';
 import { taskSchema } from '@/utils/validationSchemas';
+import { TaskFormData } from '@/types/task';
 
 interface CreateTaskModalProps {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    title: string;
-    description: string;
-    startDate: Date | null;
-    endDate: Date | null;
-    assignedTo: string | null;
-    completed: boolean;
-  }) => void;
+  onSubmit: (data: TaskFormData) => void;
 }
 
 export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalProps) => {
@@ -37,8 +31,8 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
           title: '',
           description: '',
           startDate: null,
-          endDate: null,
-          assignedTo: null,
+          dueDate: null,
+          assignedTo: '',
           completed: false,
         }}
         validationSchema={taskSchema}
@@ -66,14 +60,14 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
             setPickerVisible(true);
           };
           const hidePicker = () => {
-          if (pickerType === "start") setFieldValue("startDate", null);
-            if (pickerType === "end") setFieldValue("endDate", null);
+            if (pickerType === "start") setFieldValue("startDate", null);
+            if (pickerType === "end") setFieldValue("dueDate", null);
             setPickerVisible(false);
           };
 
           const handleConfirm = (date: Date) => {
             if (pickerType === "start") setFieldValue("startDate", date);
-            if (pickerType === 'end') setFieldValue('endDate', date);
+            if (pickerType === 'end') setFieldValue('dueDate', date);
             setPickerVisible(false);
           };
 
@@ -153,14 +147,14 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                   onPress={() => showPicker("end")}
                 >
                   <Text style={styles.placeholder}>
-                    {values.endDate
-                      ? format(values.endDate, "MM-dd-yyyy")
+                    {values.dueDate
+                      ? format(values.dueDate, "MM-dd-yyyy")
                       : "End Date"}
                   </Text>
                   <Ionicons name="chevron-down" size={20} />
                 </TouchableOpacity>
-                {touched.endDate && errors.endDate && (
-                  <Text style={styles.error}>{errors.endDate}</Text>
+                {touched.dueDate && errors.dueDate && (
+                  <Text style={styles.error}>{errors.dueDate}</Text>
                 )}
               </View>
 
@@ -198,7 +192,7 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                   styles.createButton,
                   (!values.title ||
                     !values.startDate ||
-                    !!errors.endDate ||
+                    !!errors.dueDate ||
                     !!errors.startDate ||
                     !!errors.title) && { backgroundColor: "#e3e9f6" },
                 ]}
@@ -206,7 +200,7 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                 disabled={
                   !values.title ||
                   !values.startDate ||
-                  !!errors.endDate ||
+                  !!errors.dueDate ||
                   !!errors.startDate ||
                   !!errors.title
                 }
@@ -216,7 +210,7 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                     styles.createButtonText,
                     (!values.title ||
                       !values.startDate ||
-                      !!errors.endDate ||
+                      !!errors.dueDate ||
                       !!errors.startDate ||
                       !!errors.title) && { color: "#b0b8c9" },
                   ]}

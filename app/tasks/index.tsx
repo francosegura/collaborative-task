@@ -84,8 +84,8 @@ export default function Tasks() {
                   onPress={() => showPicker("end")}
                 >
                   <Text style={styles.placeholder}>
-                    {filters.endDate
-                      ? format(filters.endDate, "MM-dd-yyyy")
+                    {filters.dueDate
+                      ? format(filters.dueDate, "MM-dd-yyyy")
                       : "end date"}
                   </Text>
                   <Ionicons name="calendar-outline" size={18} color="#999" />
