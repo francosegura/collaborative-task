@@ -11,7 +11,7 @@ interface TaskContextType {
   filters: TaskFilters;
   setFilters: (filters: TaskFilters) => void;
   createTask: (taskData: TaskFormData) => Promise<void>;
-  updateTaskStatus: (taskId: string, status: 'pending' | 'completed') => Promise<void>;
+  updateTaskStatus: (taskId: string, completed: boolean) => Promise<void>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -75,11 +75,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateTaskStatus = async (taskId: string, status: 'pending' | 'completed') => {
+  const updateTaskStatus = async (taskId: string, completed: boolean) => {
     try {
-      // TODO: Implementar llamada a API real
       setTasks(prev =>
-        prev.map(task => (task.id === taskId ? { ...task, status } : task))
+        prev.map(task => (task.id === taskId ? { ...task, completed } : task))
       );
     } catch (err) {
       setError('Error al actualizar la tarea');

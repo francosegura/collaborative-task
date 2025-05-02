@@ -90,35 +90,3 @@ let mockTasks: TaskAPI[] = [
       }, 400);
     });
   };
-  
-  // Filter tasks by start_date or due_date
-  export const searchTasks = async (
-    start?: string,
-    end?: string
-  ): Promise<TaskAPI[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        let filtered = mockTasks.filter((task) => task.user === loggedInUserId);
-  
-        if (start) {
-          const startDate = new Date(start).getTime();
-          filtered = filtered.filter(
-            (t) => t.start_date && new Date(t.start_date).getTime() >= startDate
-          );
-        }
-  
-        if (end) {
-          const endDate = new Date(end).getTime();
-          filtered = filtered.filter(
-            (t) =>
-              !t.due_date ||
-              new Date(t.due_date).getTime() <= endDate
-          );
-        }
-  
-        console.log('[MockAPI] Search results:', filtered);
-        resolve(filtered);
-      }, 400);
-    });
-  };
-  

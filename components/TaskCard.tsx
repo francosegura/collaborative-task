@@ -1,15 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 import { format } from 'date-fns';
 import { Task } from '@/types/task';
+import { useTasks } from '@/context/TaskContext';
 
-type Props = {
+type TaskCardProps = {
   task: Task;
-  onToggleComplete?: () => void;
 };
 
-const TaskCard = ({ task, onToggleComplete }: Props) => {
+const TaskCard = (props: TaskCardProps) => {
+  const { updateTaskStatus } = useTasks();
+  const { task } = props;
   const initials = task.user
     .split(' ')
     .map((s) => s[0])
@@ -18,9 +20,16 @@ const TaskCard = ({ task, onToggleComplete }: Props) => {
     .slice(0, 2);
 
   const dueDate = task.dueDate ? format(task.dueDate, 'MMMM dd, yyyy') : null;
+  const onToggleComplete = () => {
+    updateTaskStatus(task.id, !task.completed);
+  };
+
+  const editTask = () => {
+    console.log('editTask');
+  };
 
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onLongPress={editTask}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{task.title}</Text>
@@ -45,7 +54,7 @@ const TaskCard = ({ task, onToggleComplete }: Props) => {
           <Text style={styles.avatarText}>{initials}</Text>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 };
 
