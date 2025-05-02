@@ -2,7 +2,7 @@ export interface Task {
   id: string;
   title: string;
   description: string;
-  startDate: Date | null;
+  startDate: Date;
   dueDate?: Date | null;
   completed: boolean;
   user: string;

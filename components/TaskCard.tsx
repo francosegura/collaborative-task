@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { format } from 'date-fns';
 import { Task } from '@/types/task';
 import { useTasks } from '@/context/TaskContext';
+
 interface TaskCardProps {
   task: Task;
   onPress?: () => void;
@@ -12,6 +13,7 @@ interface TaskCardProps {
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, onPress, onLongPress }) => {
   const { updateTaskStatus } = useTasks();
+  const isOverdue = task.dueDate ? new Date() > task.dueDate : false;
 
   const initials = task.user
     .split(' ')
@@ -40,18 +42,30 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onPress, onLongPress }) => {
         </View>
         <TouchableOpacity onPress={onToggleComplete}>
           <View style={styles.checkbox}>
-            {task.completed && <Ionicons name="checkmark" size={18} color="#000" />}
+            {task.completed && (
+              <Ionicons name="checkmark" size={18} color="#000" />
+            )}
           </View>
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
-        {dueDate && (
-          <View style={styles.dateBox}>
-            <Text style={styles.dateText}>{dueDate}</Text>
-            <Ionicons name="alert-circle" size={14} color="#dc2626" />
-          </View>
-        )}
+        <View style={styles.dateBox}>
+          <Text style={[styles.dateText, isOverdue && styles.overdueText]}>
+            {format(task.startDate, "MMMM dd, yyyy")}
+          </Text>
+          {dueDate && (
+            <>
+              <Text style={[styles.dateText, isOverdue && styles.overdueText]}>{" - "}</Text>
+              <Text style={[styles.dateText, isOverdue && styles.overdueText]}>
+                {dueDate}
+              </Text>
+              {isOverdue && (
+                <Ionicons name="alert-circle" size={14} color="rgba(249, 114, 114, 1)" />
+              )}
+            </>
+          )}
+        </View>
 
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{initials}</Text>
@@ -102,16 +116,18 @@ const styles = StyleSheet.create({
   dateBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FECACA',
+    backgroundColor: 'rgba(241, 241, 241, 1)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
     gap: 6,
   },
   dateText: {
-    color: '#dc2626',
     fontWeight: '500',
     fontSize: 13,
+  },
+  overdueText: {
+    color: 'rgba(249, 114, 114, 1)',
   },
   avatar: {
     width: 32,
