@@ -90,3 +90,17 @@ let mockTasks: TaskAPI[] = [
       }, 400);
     });
   };
+
+  export const updateTask = async (taskId: string, taskData: TaskAPI) => {
+    return new Promise<TaskAPI>((resolve, reject) => {
+      setTimeout(() => {
+        const task = mockTasks.find(t => t.id === taskId);
+        if (!task) return reject('Task not found');
+        Object.assign(task, taskData);
+        console.log('[MockAPI] Task updated', task);
+        resolve(task);
+      }, 400);
+    });
+  };
+  
+  

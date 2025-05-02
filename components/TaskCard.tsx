@@ -4,14 +4,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { format } from 'date-fns';
 import { Task } from '@/types/task';
 import { useTasks } from '@/context/TaskContext';
-
-type TaskCardProps = {
+interface TaskCardProps {
   task: Task;
-};
+  onPress?: () => void;
+  onLongPress?: () => void;
+}
 
-const TaskCard = (props: TaskCardProps) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onPress, onLongPress }) => {
   const { updateTaskStatus } = useTasks();
-  const { task } = props;
+
   const initials = task.user
     .split(' ')
     .map((s) => s[0])
@@ -24,12 +25,14 @@ const TaskCard = (props: TaskCardProps) => {
     updateTaskStatus(task.id, !task.completed);
   };
 
-  const editTask = () => {
-    console.log('editTask');
-  };
-
   return (
-    <Pressable style={styles.card} onLongPress={editTask}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={300}
+      activeOpacity={0.7}
+    >
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{task.title}</Text>
@@ -54,7 +57,7 @@ const TaskCard = (props: TaskCardProps) => {
           <Text style={styles.avatarText}>{initials}</Text>
         </View>
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

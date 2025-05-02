@@ -12,6 +12,7 @@ interface TaskContextType {
   setFilters: (filters: TaskFilters) => void;
   createTask: (taskData: TaskFormData) => Promise<void>;
   updateTaskStatus: (taskId: string, completed: boolean) => Promise<void>;
+  updateTask: (taskId: string, taskData: TaskFormData) => Promise<void>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -87,6 +88,29 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateTask = async (taskId: string, taskData: TaskFormData) => {
+    try {
+      // TODO: Implementar llamada a API real
+      const updatedTask: TaskAPI = {
+        id: taskId,
+        user: user?.id || "",
+        start_date: taskData.startDate ? taskData.startDate.toISOString() : "",
+        due_date: taskData.dueDate ? taskData.dueDate.toISOString() : "",
+        title: taskData.title,
+        description: taskData.description,
+        completed: taskData.completed
+      };
+      const response = await mockApi.updateTask(taskId, updatedTask);
+      setTasks(prev =>
+        prev.map(task => (task.id === taskId ? { ...task, ...response } : task))
+      );
+    } catch (err) {
+      setError('Error al actualizar la tarea');
+      console.error('Error updating task:', err);
+      throw err;
+    }
+  };
+  
   const filteredTasks = tasks.filter(task => {
     if (!user || task.user !== user.id) return false;
 
@@ -119,6 +143,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         setFilters,
         createTask,
         updateTaskStatus,
+        updateTask,
       }}
     >
       {children}

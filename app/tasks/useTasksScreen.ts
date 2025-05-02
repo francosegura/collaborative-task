@@ -8,7 +8,7 @@ type FilterType = 'all' | 'completed';
 
 export const useTasksScreen = () => {
   const { user, logout } = useAuth();
-  const { tasks, filters, setFilters, createTask } = useTasks();
+  const { tasks, filters, setFilters, createTask, updateTask } = useTasks();
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [pickerType, setPickerType] = useState<'start' | 'end' | null>(null);
   const [isPickerVisible, setPickerVisible] = useState(false);
@@ -52,22 +52,18 @@ export const useTasksScreen = () => {
     setCreateModalVisible(false);
   };
 
-  const handleCreateTask = async (task: TaskFormData) => {
+  const handleCreateTask = async (task: TaskFormData, editMode: boolean, selectedTaskId?: string) => {
     setLoading(true);
     setError(null);
     try {
-      await createTask({
-        title: task.title,
-        description: task.description,
-        startDate: task.startDate ? task.startDate : null,
-        dueDate: task.dueDate ? task.dueDate : null,
-        assignedTo: task.assignedTo || '',
-        completed: task.completed,
-      });
-      
+      if (editMode && selectedTaskId) {
+        await updateTask(selectedTaskId, task);
+      } else {
+        await createTask(task);
+      }
       setCreateModalVisible(false);
     } catch (err: any) {
-      setError(err?.toString() || 'Error creating task');
+      setError(err?.toString() || 'Error creating/updating task');
     } finally {
       setLoading(false);
     }

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import ArrowIcon from "@/assets/arrow.svg";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import React from "react";
+import React, { useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
 import { format } from "date-fns";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -19,7 +19,7 @@ import FormInput from "@/components/FormInput";
 import { useTasksScreen } from "./useTasksScreen";
 import {CreateTaskModal} from "./CreateTaskModal";
 import TaskCard from '@/components/TaskCard';
-
+import { Task, TaskFormData } from "@/types/task";
 export default function Tasks() {
   const {
     user,
@@ -39,15 +39,32 @@ export default function Tasks() {
     handleCreateTask,
   } = useTasksScreen();
 
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [editMode, setEditMode] = useState(false);
+
+  const handleLongPressTask = (task: Task) => {
+    setSelectedTask(task);
+    setEditMode(true);
+    handleCreateTaskPress();
+  };
+
+  const handleCloseModalWithReset = () => {
+    setSelectedTask(null);
+    setEditMode(false);
+    handleCloseModal();
+  };
+
+  const handleSubmitTask = (task: TaskFormData) => {
+    handleCreateTask(task, editMode, selectedTask?.id);
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.safeArea}
     >
       <SafeAreaView style={styles.safeArea}>
-        <View
-          style={styles.scrollContent}
-        >
+        <View style={styles.scrollContent}>
           <View style={styles.container}>
             <View style={styles.header}>
               <Text style={styles.title}>{user?.name}'s Tasks</Text>
@@ -135,12 +152,15 @@ export default function Tasks() {
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
-            <FlatList
+              </View>
+              <FlatList
                 data={tasks}
-                keyExtractor={item => item.id}
+                keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                  <TaskCard task={item} />
+                  <TaskCard
+                    task={item}
+                    onLongPress={() => handleLongPressTask(item)}
+                  />
                 )}
                 contentContainerStyle={{ paddingBottom: 24 }}
                 showsVerticalScrollIndicator={false}
@@ -163,21 +183,27 @@ export default function Tasks() {
                   </>
                 }
               />
+            
           </View>
         </View>
         <View style={styles.bottomContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.createButton}
-            onPress={handleCreateTaskPress}
+            onPress={() => {
+              setSelectedTask(null);
+              setEditMode(false);
+              handleCreateTaskPress();
+            }}
           >
             <Text style={styles.createButtonText}>Create a Task</Text>
           </TouchableOpacity>
         </View>
-
         <CreateTaskModal
           visible={isCreateModalVisible}
-          onClose={handleCloseModal}
-          onSubmit={handleCreateTask}
+          onClose={handleCloseModalWithReset}
+          onSubmit={handleSubmitTask}
+          initialValues={selectedTask}
+          editMode={editMode}
         />
       </SafeAreaView>
     </KeyboardAvoidingView>

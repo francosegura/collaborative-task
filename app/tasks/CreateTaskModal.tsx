@@ -16,25 +16,36 @@ import { format } from 'date-fns';
 import { Formik } from 'formik';
 import { taskSchema } from '@/utils/validationSchemas';
 import { TaskFormData } from '@/types/task';
-
+import { Task } from '@/types/task';
 interface CreateTaskModalProps {
   visible: boolean;
   onClose: () => void;
   onSubmit: (data: TaskFormData) => void;
+  initialValues?: Task | null;
+  editMode?: boolean;
 }
 
-export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalProps) => {
+export const CreateTaskModal = ({ visible, onClose, onSubmit, initialValues, editMode }: CreateTaskModalProps) => {
   return (
     <Modal isVisible={visible} onBackdropPress={onClose} useNativeDriver>
       <Formik
-        initialValues={{
-          title: '',
-          description: '',
-          startDate: null,
-          dueDate: null,
-          assignedTo: '',
-          completed: false,
-        }}
+        initialValues={
+            initialValues ? {
+              title: initialValues.title,
+              description: initialValues.description,
+              startDate: initialValues.startDate,
+              dueDate: initialValues.dueDate,
+              assignedTo: initialValues.user,
+              completed: initialValues.completed,
+            } : {
+            title: '',
+            description: '',
+            startDate: null,
+            dueDate: null,
+            assignedTo: '',
+            completed: false,
+          } as TaskFormData
+        }
         validationSchema={taskSchema}
         onSubmit={(values, { resetForm }) => {
           onSubmit(values);
@@ -98,9 +109,7 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                   onChangeText={handleChange("title")}
                   onBlur={handleBlur("title")}
                   style={styles.input}
-                  error={
-                    touched.title && errors.title ? errors.title : undefined
-                  }
+                  error={typeof errors.title === 'string' && touched.title ? errors.title : undefined}
                 />
               </View>
 
@@ -114,11 +123,7 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                   multiline
                   numberOfLines={4}
                   style={styles.textArea}
-                  error={
-                    touched.description && errors.description
-                      ? errors.description
-                      : undefined
-                  }
+                  error={typeof errors.description === 'string' && touched.description ? errors.description : undefined}
                 />
               </View>
 
@@ -135,7 +140,7 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                   </Text>
                   <Ionicons name="chevron-down" size={20} />
                 </TouchableOpacity>
-                {touched.startDate && errors.startDate && (
+                {touched.startDate && typeof errors.startDate === 'string' && (
                   <Text style={styles.error}>{errors.startDate}</Text>
                 )}
               </View>
@@ -153,7 +158,7 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                   </Text>
                   <Ionicons name="chevron-down" size={20} />
                 </TouchableOpacity>
-                {touched.dueDate && errors.dueDate && (
+                {touched.dueDate && typeof errors.dueDate === 'string' && (
                   <Text style={styles.error}>{errors.dueDate}</Text>
                 )}
               </View>
@@ -215,7 +220,7 @@ export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalP
                       !!errors.title) && { color: "#b0b8c9" },
                   ]}
                 >
-                  Create task
+                  {editMode ? 'Update task' : 'Create task'}
                 </Text>
               </TouchableOpacity>
 
