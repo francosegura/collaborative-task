@@ -4,12 +4,6 @@ import { useAuth } from './AuthContext';
 import { isDateInRange } from '../utils/date';
 import * as mockApi from '../services/mockApi';
 
-export interface TaskFilters {
-  startDate?: Date;
-  dueDate?: Date;
-  searchText?: string;
-}
-
 interface TaskContextType {
   tasks: Task[];
   loading: boolean;
