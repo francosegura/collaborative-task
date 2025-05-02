@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import Modal from 'react-native-modal';
 import FormInput from '@/components/FormInput';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { format } from 'date-fns';
+import { Formik } from 'formik';
+import { taskSchema } from '@/utils/validationSchemas';
 
 interface CreateTaskModalProps {
   visible: boolean;
@@ -28,116 +30,211 @@ interface CreateTaskModalProps {
 }
 
 export const CreateTaskModal = ({ visible, onClose, onSubmit }: CreateTaskModalProps) => {
-    const [pickerType, setPickerType] = useState<'start' | 'end' | null>(null);
-  const [isPickerVisible, setPickerVisible] = useState(false);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-    const showPicker = (type: "start" | "end") => {
-      setPickerType(type);
-      setPickerVisible(true);
-    };
-    const hidePicker = () => {
-        setPickerVisible(false);
-      };
-    
-      const handleConfirm = (date: Date) => {
-        if (pickerType === "start") setStartDate(date);
-        if (pickerType === "end") setEndDate(date);
-        hidePicker();   
-      };
-      const handleCreateTask = () => {
-        onSubmit({
-          title: "",
-          description: "",
-          startDate: startDate,
-          endDate: endDate,
-          assignedTo: null,
-          completed: false,
-        });
-        onClose();
-      };
   return (
     <Modal isVisible={visible} onBackdropPress={onClose} useNativeDriver>
-      <ScrollView
-        style={styles.modalContent}
-        showsVerticalScrollIndicator={false}
+      <Formik
+        initialValues={{
+          title: '',
+          description: '',
+          startDate: null,
+          endDate: null,
+          assignedTo: null,
+          completed: false,
+        }}
+        validationSchema={taskSchema}
+        onSubmit={(values, { resetForm }) => {
+          onSubmit(values);
+          resetForm();
+          onClose();
+        }}
+        enableReinitialize
       >
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Add new Task</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
+        {({
+          values,
+          errors,
+          touched,
+          setFieldValue,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+        }) => {
+          const [pickerType, setPickerType] = React.useState<'start' | 'end' | null>(null);
+          const [isPickerVisible, setPickerVisible] = React.useState(false);
 
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Title</Text>
-          <FormInput placeholder="Title for your task" />
-        </View>
+          const showPicker = (type: 'start' | 'end') => {
+            setPickerType(type);
+            setPickerVisible(true);
+          };
+          const hidePicker = () => {
+          if (pickerType === "start") setFieldValue("startDate", null);
+            if (pickerType === "end") setFieldValue("endDate", null);
+            setPickerVisible(false);
+          };
 
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Description</Text>
-          <FormInput
-            placeholder="Enter an description for you task"
-            multiline
-            numberOfLines={4}
-            style={styles.textArea}
-          />
-        </View>
+          const handleConfirm = (date: Date) => {
+            if (pickerType === "start") setFieldValue("startDate", date);
+            if (pickerType === 'end') setFieldValue('endDate', date);
+            setPickerVisible(false);
+          };
 
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Start date</Text>
-          <TouchableOpacity
-            style={styles.input}
-            onPress={() => showPicker("start")}
-          >
-            <Text style={styles.placeholder}>
-              {startDate ? format(startDate, "MM-dd-yyyy") : "Start Date"}
-            </Text>
-            <Ionicons name="chevron-down" size={20} />
-          </TouchableOpacity>
-        </View>
+          useEffect(() => {
+            if (!visible) {
+              setPickerType(null);
+              setPickerVisible(false);
+            }
+          }, [visible]);
 
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>End date</Text>
-          <TouchableOpacity
-            style={styles.input}
-            onPress={() => showPicker("end")}
-          >
-            <Text style={styles.placeholder}>
-              {endDate ? format(endDate, "MM-dd-yyyy") : "End Date"}
-            </Text>
-            <Ionicons name="chevron-down" size={20} />
-          </TouchableOpacity>
-        </View>
+          return (
+            <ScrollView
+              style={styles.modalContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Add new Task</Text>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <Ionicons name="close" size={24} color="#000" />
+                </TouchableOpacity>
+              </View>
 
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Assign to</Text>
-          <TouchableOpacity style={styles.dateInput}>
-            <Text style={styles.dateInputText}>
-              Select and user for your task
-            </Text>
-            <Ionicons name="chevron-down" size={20} color="#000" />
-          </TouchableOpacity>
-        </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Title</Text>
+                <FormInput
+                  placeholder="Title for your task"
+                  value={values.title}
+                  onChangeText={handleChange("title")}
+                  onBlur={handleBlur("title")}
+                  style={styles.input}
+                  error={
+                    touched.title && errors.title ? errors.title : undefined
+                  }
+                />
+              </View>
 
-        <View style={styles.completedContainer}>
-          <Text style={styles.label}>Task Completed</Text>
-          <TouchableOpacity style={styles.checkbox} />
-        </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Description</Text>
+                <FormInput
+                  placeholder="Enter a description for your task"
+                  value={values.description}
+                  onChangeText={handleChange("description")}
+                  onBlur={handleBlur("description")}
+                  multiline
+                  numberOfLines={4}
+                  style={styles.textArea}
+                  error={
+                    touched.description && errors.description
+                      ? errors.description
+                      : undefined
+                  }
+                />
+              </View>
 
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={handleCreateTask}
-        >
-          <Text style={styles.createButtonText}>Create task</Text>
-        </TouchableOpacity>
-        <DateTimePickerModal
-          isVisible={isPickerVisible}
-          mode="date"
-          onConfirm={handleConfirm}
-          onCancel={hidePicker}
-        />
-      </ScrollView>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Start date</Text>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => showPicker("start")}
+                >
+                  <Text style={styles.placeholder}>
+                    {values.startDate
+                      ? format(values.startDate, "MM-dd-yyyy")
+                      : "Start Date"}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} />
+                </TouchableOpacity>
+                {touched.startDate && errors.startDate && (
+                  <Text style={styles.error}>{errors.startDate}</Text>
+                )}
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>End date</Text>
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => showPicker("end")}
+                >
+                  <Text style={styles.placeholder}>
+                    {values.endDate
+                      ? format(values.endDate, "MM-dd-yyyy")
+                      : "End Date"}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} />
+                </TouchableOpacity>
+                {touched.endDate && errors.endDate && (
+                  <Text style={styles.error}>{errors.endDate}</Text>
+                )}
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Assign to</Text>
+                <TouchableOpacity style={styles.dateInput}>
+                  <Text style={styles.dateInputText}>
+                    Select and user for your task
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#000" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.completedContainer}>
+                <Text style={styles.label}>Task Completed</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.checkbox,
+                    values.completed && styles.checkboxChecked,
+                  ]}
+                  onPress={() => setFieldValue("completed", !values.completed)}
+                >
+                  {values.completed && (
+                    <Ionicons
+                      name="checkmark"
+                      size={18}
+                      color={colors.primary}
+                    />
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.createButton,
+                  (!values.title ||
+                    !values.startDate ||
+                    !!errors.endDate ||
+                    !!errors.startDate ||
+                    !!errors.title) && { backgroundColor: "#e3e9f6" },
+                ]}
+                onPress={() => handleSubmit()}
+                disabled={
+                  !values.title ||
+                  !values.startDate ||
+                  !!errors.endDate ||
+                  !!errors.startDate ||
+                  !!errors.title
+                }
+              >
+                <Text
+                  style={[
+                    styles.createButtonText,
+                    (!values.title ||
+                      !values.startDate ||
+                      !!errors.endDate ||
+                      !!errors.startDate ||
+                      !!errors.title) && { color: "#b0b8c9" },
+                  ]}
+                >
+                  Create task
+                </Text>
+              </TouchableOpacity>
+
+              <DateTimePickerModal
+                isVisible={isPickerVisible}
+                mode="date"
+                onConfirm={handleConfirm}
+                onCancel={hidePicker}
+              />
+            </ScrollView>
+          );
+        }}
+      </Formik>
     </Modal>
   );
 };
@@ -226,6 +323,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(0, 0, 0, 0.1)",
     borderRadius: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+  },
+  checkboxChecked: {
+    borderColor: colors.primary,
+    backgroundColor: '#e3e9f6',
   },
   createButton: {
     backgroundColor: colors.primary,
@@ -237,5 +341,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  error: {
+    color: '#e74c3c',
+    fontSize: 13,
+    marginTop: 4,
+    marginLeft: 4,
   },
 }); 

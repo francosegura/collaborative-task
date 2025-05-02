@@ -25,4 +25,16 @@ export const registerSchema = Yup.object().shape({
   confirmPassword: Yup.string()
     .required('Please confirm your password')
     .oneOf([Yup.ref('password')], 'Passwords do not match'),
+});
+
+export const taskSchema = Yup.object().shape({
+  title: Yup.string().required('Title is required'),
+  description: Yup.string(),
+  startDate: Yup.date().required('Start date is required'),
+  endDate: Yup.date()
+    .nullable()
+    .min(
+      Yup.ref('startDate'),
+      'End date cannot be before start date'
+    ),
 }); 
