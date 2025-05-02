@@ -27,6 +27,7 @@ export default function Tasks() {
     handleLogout,
     handleFilterChange,
     filters,
+    setFilters,
     tasks,
     isPickerVisible,
     showPicker,
@@ -37,10 +38,12 @@ export default function Tasks() {
     handleCreateTaskPress,
     handleCloseModal,
     handleCreateTask,
+    handleSearchChange
   } = useTasksScreen();
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [pickerType, setPickerType] = useState<'start' | 'end' | null>(null);
 
   const handleLongPressTask = (task: Task) => {
     setSelectedTask(task);
@@ -82,11 +85,18 @@ export default function Tasks() {
             <Text style={styles.date}>{currentDate}</Text>
 
             <View style={styles.inputsContainer}>
-              <FormInput placeholder="Search by Title or Name" />
+              <FormInput 
+                placeholder="Search by Title or Name" 
+                onChangeText={handleSearchChange}
+                value={filters.searchText}
+              />
               <View style={styles.dateInputsContainer}>
                 <TouchableOpacity
                   style={styles.input}
-                  onPress={() => showPicker("start")}
+                  onPress={() => {
+                    setPickerType('start');
+                    showPicker("start");
+                  }}
                 >
                   <Text style={styles.placeholder}>
                     {filters.startDate
@@ -98,7 +108,10 @@ export default function Tasks() {
 
                 <TouchableOpacity
                   style={styles.input}
-                  onPress={() => showPicker("end")}
+                  onPress={() => {
+                    setPickerType('end');
+                    showPicker("end");
+                  }}
                 >
                   <Text style={styles.placeholder}>
                     {filters.dueDate
@@ -111,8 +124,13 @@ export default function Tasks() {
                 <DateTimePickerModal
                   isVisible={isPickerVisible}
                   mode="date"
-                  onConfirm={handleConfirm}
-                  onCancel={hidePicker}
+                  onConfirm={(date) => {
+                    if (pickerType === 'start') setFilters({ ...filters, startDate: date });
+                    if (pickerType === 'end') setFilters({ ...filters, dueDate: date });
+                    hidePicker();
+                    setPickerType(null);
+                  }}
+                  onCancel={() => { hidePicker(); setPickerType(null); }}
                 />
               </View>
             </View>

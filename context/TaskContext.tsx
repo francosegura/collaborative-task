@@ -4,12 +4,20 @@ import { useAuth } from './AuthContext';
 import { isDateInRange } from '../utils/date';
 import * as mockApi from '../services/mockApi';
 
+export interface TaskFilters {
+  startDate?: Date;
+  dueDate?: Date;
+  searchText?: string;
+}
+
 interface TaskContextType {
   tasks: Task[];
   loading: boolean;
   error: string | null;
   filters: TaskFilters;
   setFilters: (filters: TaskFilters) => void;
+  statusFilter: 'all' | 'completed';
+  setStatusFilter: (status: 'all' | 'completed') => void;
   createTask: (taskData: TaskFormData) => Promise<void>;
   updateTaskStatus: (taskId: string, completed: boolean) => Promise<void>;
   updateTask: (taskId: string, taskData: TaskFormData) => Promise<void>;
@@ -23,6 +31,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<TaskFilters>({});
+  const [statusFilter, setStatusFilter] = useState<'all' | 'completed'>('all');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -129,8 +138,15 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         filters.startDate,
         filters.dueDate
       );
+    } else if (filters.startDate) {
+      return task.startDate && task.startDate >= filters.startDate;
+    } else if (filters.dueDate) {
+      return task.dueDate && task.dueDate <= filters.dueDate;
     }
 
+    if (statusFilter === 'completed') {
+      return task.completed;
+    }
     return true;
   });
 
@@ -142,6 +158,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         error,
         filters,
         setFilters,
+        statusFilter,
+        setStatusFilter,
         createTask,
         updateTaskStatus,
         updateTask,

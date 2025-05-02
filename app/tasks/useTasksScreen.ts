@@ -8,7 +8,7 @@ type FilterType = 'all' | 'completed';
 
 export const useTasksScreen = () => {
   const { user, logout } = useAuth();
-  const { tasks, filters, setFilters, createTask, updateTask, loadTasks } = useTasks();
+  const { tasks, filters, setFilters, createTask, updateTask, loadTasks, statusFilter, setStatusFilter } = useTasks();
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [pickerType, setPickerType] = useState<'start' | 'end' | null>(null);
   const [isPickerVisible, setPickerVisible] = useState(false);
@@ -70,6 +70,10 @@ export const useTasksScreen = () => {
     }
   };
 
+  const handleSearchChange = (text: string) => {
+    setFilters({ ...filters, searchText: text });
+  };
+
   // Get current date in format "Wednesday, April 30"
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -81,8 +85,8 @@ export const useTasksScreen = () => {
     user,
     currentDate,
     tasks,
-    activeFilter,
-    handleFilterChange,
+    activeFilter: statusFilter,
+    handleFilterChange: setStatusFilter,
     filters,
     setFilters,
     isPickerVisible,
@@ -95,6 +99,7 @@ export const useTasksScreen = () => {
     handleCloseModal,
     handleCreateTask,
     loading,
-    error
+    error,
+    handleSearchChange
   };
 }; 
