@@ -8,13 +8,33 @@ import FormInput from '../components/FormInput';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useState } from 'react';
 import Feather from '@expo/vector-icons/Feather';
+import { format } from 'date-fns';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { Ionicons } from '@expo/vector-icons';
 
 type FilterType = 'all' | 'completed';
 
 export default function Tasks() {
   const { user, logout } = useAuth();
-  const { tasks } = useTasks();
+  const { tasks, filters, setFilters } = useTasks();
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [pickerType, setPickerType] = useState<'start' | 'end' | null>(null);
+  const [isPickerVisible, setPickerVisible] = useState(false);
+
+  const showPicker = (type: 'start' | 'end') => {
+    setPickerType(type);
+    setPickerVisible(true);
+  };
+
+  const hidePicker = () => {
+    setPickerVisible(false);
+  };
+
+  const handleConfirm = (date: Date) => {
+    if (pickerType === 'start') setFilters({ ...filters, startDate: date });
+    if (pickerType === 'end') setFilters({ ...filters, endDate: date });
+    hidePicker();
+  };
 
   const handleLogout = async () => {
     try {
@@ -37,19 +57,22 @@ export default function Tasks() {
   });
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.safeArea}
     >
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
             <View style={styles.header}>
               <Text style={styles.title}>{user?.name}'s Tasks</Text>
-              <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}
+              >
                 <View style={styles.logoutIcon}>
                   <ArrowIcon width={15} />
                 </View>
@@ -62,29 +85,62 @@ export default function Tasks() {
             <View style={styles.inputsContainer}>
               <FormInput placeholder="Search by Title or Name" />
               <View style={styles.dateInputsContainer}>
-                <View style={styles.dateInputWrapper}>
-                  <FormInput placeholder="start date" style={styles.dateInput} />
-                </View>
-                <View style={styles.dateInputWrapper}>
-                  <FormInput placeholder="end date" style={styles.dateInput} />
-                </View>
+                <TouchableOpacity style={styles.input} onPress={() => showPicker('start')}>
+                  <Text style={styles.placeholder}>
+                    {filters.startDate ? format(filters.startDate, 'yyyy-MM-dd') : 'start date'}
+                  </Text>
+                  <Ionicons name="calendar-outline" size={18} color="#999" />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.input} onPress={() => showPicker('end')}>
+                  <Text style={styles.placeholder}>
+                    {filters.endDate ? format(filters.endDate, 'yyyy-MM-dd') : 'end date'}
+                  </Text>
+                  <Ionicons name="calendar-outline" size={18} color="#999" />
+                </TouchableOpacity>
+
+                <DateTimePickerModal
+                  isVisible={isPickerVisible}
+                  mode="date"
+                  onConfirm={handleConfirm}
+                  onCancel={hidePicker}
+                />
               </View>
             </View>
 
             <View style={styles.emptyStateContainer}>
               <View style={styles.tabsContainer}>
-                <TouchableOpacity 
-                  onPress={() => handleFilterChange('all')}
+                <TouchableOpacity
+                  onPress={() => handleFilterChange("all")}
                   style={[styles.tabButton]}
                 >
-                  <Text style={[styles.tabText, activeFilter === 'all' && styles.activeTabText]}>All tasks</Text>
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeFilter === "all" && styles.activeTabText,
+                    ]}
+                  >
+                    All tasks
+                  </Text>
                 </TouchableOpacity>
-                <Feather name="minus" size={24} color="rgba(204, 207, 210, 1)" style={styles.tabSeparator} />
-                <TouchableOpacity 
-                  onPress={() => handleFilterChange('completed')}
+                <Feather
+                  name="minus"
+                  size={24}
+                  color="rgba(204, 207, 210, 1)"
+                  style={styles.tabSeparator}
+                />
+                <TouchableOpacity
+                  onPress={() => handleFilterChange("completed")}
                   style={[styles.tabButton]}
                 >
-                  <Text style={[styles.tabText, activeFilter === 'completed' && styles.activeTabText]}>Completed tasks</Text>
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeFilter === "completed" && styles.activeTabText,
+                    ]}
+                  >
+                    Completed tasks
+                  </Text>
                 </TouchableOpacity>
               </View>
 
@@ -97,8 +153,8 @@ export default function Tasks() {
                     style={styles.emptyIcon}
                   />
                   <Text style={styles.emptyStateTitle}>
-                    <Text style={{ fontStyle: "italic" }}>Just Press</Text> "Create
-                    a Task"
+                    <Text style={{ fontStyle: "italic" }}>Just Press</Text>{" "}
+                    "Create a Task"
                   </Text>
                   <Text style={styles.emptyStateSubtitle}>
                     and start collaborating
@@ -161,10 +217,6 @@ const styles = StyleSheet.create({
   tabSeparator: {
     transform: [{ rotate: '90deg' }],
   },
-  dateInput: {
-    height: 40,
-    borderRadius: 8,
-  },
   logoutText: {
     fontSize: 14,
     color: "#000",
@@ -176,11 +228,24 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   dateInputsContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
   },
-  dateInputWrapper: {
+  input: {
     flex: 1,
+    height: 45,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+  },
+  placeholder: {
+    color: '#888',
+    fontSize: 14,
   },
   tabsContainer: {
     flexDirection: "row",
